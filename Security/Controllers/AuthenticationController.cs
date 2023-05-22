@@ -2,6 +2,12 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using Security.Models;
 using MongoDB.Driver;
+using Microsoft.Extensions.Configuration;
+using System.Security.Cryptography;
+using System.Text;
+using Microsoft.IdentityModel.Tokens;
+using System.Security.Claims;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace Security.Controllers;
 
@@ -14,9 +20,8 @@ public class AuthenticationController : ControllerBase
     protected static IMongoClient _client;
     protected static IMongoDatabase _db;
     private Vault vault = new();
-    private Hashing hashing = new();
 
-    public AuthenticationController(ILogger<AuthenticationController> logger, Iconfiguration config)
+    public AuthenticationController(ILogger<AuthenticationController> logger, IConfiguration config)
     {
         string cons = vault.GetSecret("dbconnection", "constring").Result;
         _logger = logger;
@@ -24,6 +29,10 @@ public class AuthenticationController : ControllerBase
         _client = new MongoClient(cons);
         _db = _client.GetDatabase("user");
     }
+
+    const int keySize = 64;
+    const int iterations = 350000;
+    HashAlgorithmName hashAlgorithm = HashAlgorithmName.SHA512;
 
     bool VerifyPassword(string password, string hash, byte[] salt)
     {
@@ -33,14 +42,16 @@ public class AuthenticationController : ControllerBase
 
     private string GenerateJwtToken(string username)
     {
-        var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Secret"]));
+        string mySecret = vault.GetSecret("authentication", "secret").Result;
+        string myIssuer = vault.GetSecret("authentication", "issuer").Result;
+        var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(mySecret));
         var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
         var claims = new[]
         {
             new Claim(ClaimTypes.NameIdentifier, username)
         };
         var token = new JwtSecurityToken(
-            _config["Issuer"],
+            myIssuer,
             "http://localhost",
             claims,
             expires: DateTime.Now.AddMinutes(15),
@@ -52,13 +63,13 @@ public class AuthenticationController : ControllerBase
     [HttpPost("login")]
     public async Task<IActionResult> Login(LoginModel loginModel)
     {
-        var collection = _db.GetCollection<User>("users");
+        var collection = _db.GetCollection<LoginModel>("users");
         var user = await collection.Find(u => u.Email == loginModel.Email).FirstOrDefaultAsync();
         if (user == null)
         {
             return Unauthorized();
         }
-        if (VerifyPassword(login.Password, result.Password, result.Salt) == false)
+        if (VerifyPassword(loginModel.Password, user.Password, user.PasswordSalt) == false)
         {
             return Unauthorized();
         }

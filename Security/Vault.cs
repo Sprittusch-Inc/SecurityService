@@ -3,7 +3,7 @@ using VaultSharp.V1.AuthMethods.Token;
 using VaultSharp.V1.AuthMethods;
 using VaultSharp.V1.Commons;
 
-namespace Users;
+namespace Security;
 public class Vault
 {
     private readonly string EndPoint;
