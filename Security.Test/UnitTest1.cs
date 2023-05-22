@@ -1,34 +1,43 @@
 namespace security.test;
 
 [TestFixture]
+
 public class Tests
 {
-    private List<User>? list;
+    List<User> list;
 
     [SetUp]
     public void Setup()
     {
-        
-        list = new List<User>();
-        list.Add(new User("user1", "password1"));
-    }
-
-    [TestCase(null, "password1")]
-    [TestCase("user1", null)]
-    [TestCase(null, null)]
-
-    public void Login(string username, string password)
-    {
-        Assert.Throws<Exception>(() =>
-        {
-            User user = new User(username, password);
-        });
+        list = new List<LoginModel>();
+        list.Add(new LoginModel("user@user.com", "password1"));
     }
 
     [Test]
-    public void Login()
+    public void invalidLoginEmail()
     {
-        User user = new User("user1", "password1");
-        Assert.IsTrue(user.Login(user));
+        LoginModel loginmodel = new LoginModel(null, "password1");
+        Assert.IsFalse(Login(loginmodel));
+    }
+
+    [Test]
+    public void invalidLoginPassword()
+    {
+        LoginModel loginmodel = new LoginModel("user@user.com", null);
+        Assert.IsFalse(Login(loginmodel));
+    }
+
+    [Test]
+    public void invalidLogin()
+    {
+        LoginModel loginmodel = new LoginModel(null, null);
+        Assert.IsFalse(Login(loginmodel));
+    }
+
+    [Test]
+    public void validLogin()
+    {
+        LoginModel loginmodel = new LoginModel("user@user.com", "password1");
+        Assert.IsTrue(Login(loginmodel));
     }
 }
