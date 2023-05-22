@@ -48,26 +48,4 @@ public class Vault
 
         return secret.ToString();
     }
-
-    public async Task StoreSalt(string path, string key, byte[] salt)
-    {
-        // Initialize one of the several auth methods.
-        IAuthMethodInfo authMethod = new TokenAuthMethodInfo("00000000-0000-0000-0000-000000000000");
-        // Initialize settings. You can also set proxies, custom delegates etc.here.
-        var vaultClientSettings = new VaultClientSettings(EndPoint, authMethod)
-        {
-            Namespace = "",
-            MyHttpClientProviderFunc = handler
-            => new HttpClient(httpClientHandler)
-            {
-                BaseAddress = new Uri(EndPoint)
-            }
-        };
-
-        IVaultClient vaultClient = new VaultClient(vaultClientSettings);
-
-        var value = new Dictionary<string, object> { { key, salt } };
-        var writtenValue = await vaultClient.V1.Secrets.KeyValue.V1.WriteSecretAsync("https://localhost:8201/ui/vault/secrets/secret/show/" + path, value);
-    }
-
 }
