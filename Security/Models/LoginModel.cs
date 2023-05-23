@@ -20,4 +20,14 @@ public bool IsBusiness{get; set;}
 public string? Iban{get; set;}
 public string? IbanSalt{get; set;}
 public string? Cvr{get; set;}
+
+public LoginModel(string email, string password){
+    Email = email;
+    Password = password;
 }
+
+public LoginModel(){
+    
+}
+}
+

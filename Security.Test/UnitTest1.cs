@@ -1,10 +1,12 @@
+using Security.Controllers;
+
 namespace security.test;
 
 [TestFixture]
 
 public class Tests
 {
-    List<User> list;
+    List<LoginModel> list;
 
     [SetUp]
     public void Setup()
@@ -14,30 +16,34 @@ public class Tests
     }
 
     [Test]
-    public void invalidLoginEmail()
+    public static void invalidLoginEmail()
     {
+        AuthenticationController auth = new AuthenticationController();
         LoginModel loginmodel = new LoginModel(null, "password1");
-        Assert.IsFalse(Login(loginmodel));
+        Assert.IsFalse(auth.Login(loginmodel));
     }
 
     [Test]
     public void invalidLoginPassword()
     {
+        AuthenticationController auth = new AuthenticationController();
         LoginModel loginmodel = new LoginModel("user@user.com", null);
-        Assert.IsFalse(Login(loginmodel));
+        Assert.IsFalse(auth.Login(loginmodel));
     }
 
     [Test]
     public void invalidLogin()
     {
+        AuthenticationController auth = new AuthenticationController();
         LoginModel loginmodel = new LoginModel(null, null);
-        Assert.IsFalse(Login(loginmodel));
+        Assert.IsFalse(auth.Login(loginmodel));
     }
 
     [Test]
     public void validLogin()
     {
+        AuthenticationController auth = new AuthenticationController();
         LoginModel loginmodel = new LoginModel("user@user.com", "password1");
-        Assert.IsTrue(Login(loginmodel));
+        Assert.IsTrue(auth.Login(loginmodel));
     }
 }
