@@ -20,6 +20,9 @@ public bool IsBusiness{get; set;}
 public string? Iban{get; set;}
 public string? IbanSalt{get; set;}
 public string? Cvr{get; set;}
+public string Role  { get; set; }
+public int AdminId { get; set; }
+public Byte[]? Salt{get; set;}
 
 public LoginModel(string email, string password){
     Email = email;

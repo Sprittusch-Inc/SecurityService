@@ -17,6 +17,7 @@ public class AuthenticationController : ControllerBase
 {
     private readonly IConfiguration _config;
     private readonly ILogger<AuthenticationController> _logger;
+    private readonly IServiceCollection _services;
     protected static IMongoClient _client;
     protected static IMongoDatabase _db;
     private Vault vault = new();
@@ -29,7 +30,6 @@ public class AuthenticationController : ControllerBase
         _client = new MongoClient(cons);
         _db = _client.GetDatabase("user");
     }
-
     const int keySize = 64;
     const int iterations = 350000;
     HashAlgorithmName hashAlgorithm = HashAlgorithmName.SHA512;
@@ -40,7 +40,7 @@ public class AuthenticationController : ControllerBase
         return hashToCompare.SequenceEqual(Convert.FromHexString(hash));
     }
 
-    private string GenerateJwtToken(string username)
+    private string GenerateJwtToken(string email, string role)
     {
         string mySecret = vault.GetSecret("authentication", "secret").Result;
         string myIssuer = vault.GetSecret("authentication", "issuer").Result;
@@ -48,7 +48,8 @@ public class AuthenticationController : ControllerBase
         var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
         var claims = new[]
         {
-            new Claim(ClaimTypes.NameIdentifier, username)
+            new Claim(ClaimTypes.NameIdentifier, email),
+            new Claim(ClaimTypes.Role, role)
         };
         var token = new JwtSecurityToken(
             myIssuer,
@@ -73,8 +74,34 @@ public class AuthenticationController : ControllerBase
         {
             return Unauthorized();
         }
-        var token = GenerateJwtToken(user.Email);
+        var token = GenerateJwtToken(user.Email, user.Role);
         return Ok(new { token });
+    }
+
+    [AllowAnonymous]
+    [HttpPost("adminlogin")]
+    public async Task<IActionResult> AdminLogin(LoginModel loginModel)
+    {
+        var collection = _db.GetCollection<LoginModel>("admin");
+        var user = await collection.Find(u => u.Email == loginModel.Email).FirstOrDefaultAsync();
+        if (user == null)
+        {
+            return Unauthorized();
+        }
+        if (VerifyPassword(loginModel.Password, user.Password, user.Salt) == false)
+        {
+            return Unauthorized();
+        }
+        var token = GenerateJwtToken(user.Email, user.Role);
+        return Ok(new { token });
+    }
+
+    [Authorize(Roles = "admin")]
+    [HttpGet("getColors")]
+    public List<string> GetColors()
+    {
+        List<string> colors = new List<string>() { "red", "green", "blue" };
+        return colors;
     }
 
 }
