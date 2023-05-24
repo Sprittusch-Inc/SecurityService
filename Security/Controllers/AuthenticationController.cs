@@ -96,12 +96,5 @@ public class AuthenticationController : ControllerBase
         return Ok(new { token });
     }
 
-    [Authorize(Roles = "admin")]
-    [HttpGet("getColors")]
-    public List<string> GetColors()
-    {
-        List<string> colors = new List<string>() { "red", "green", "blue" };
-        return colors;
-    }
 
 }
