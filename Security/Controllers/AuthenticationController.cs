@@ -96,5 +96,39 @@ public class AuthenticationController : ControllerBase
         return Ok(new { token });
     }
 
+    [AllowAnonymous]
+    [HttpPost("validate")]
+    public async Task<IActionResult> ValidateToken([FromBody] string? token)
+    {
+        if (token == null)
+        {
+            return BadRequest("Token is invalid");
+        }
+
+        var tokenHandler = new JwtSecurityTokenHandler();
+        var key = Encoding.ASCII.GetBytes(vault.GetSecret("authentication", "secret").Result);
+
+        try
+        {
+            tokenHandler.ValidateToken(token, new TokenValidationParameters
+            {
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(key),
+                ValidateIssuer = false,
+                ValidateAudience = false,
+                ValidIssuer = vault.GetSecret("authentication", "issuer").Result
+            }, out SecurityToken validatedToken);
+
+            var jwtToken = (JwtSecurityToken)validatedToken;
+            var email = jwtToken.Claims.First(x => x.Type == ClaimTypes.NameIdentifier).Value;
+
+            return Ok(email);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex.Message);
+            return StatusCode(404);
+        }
+    }
 
 }
