@@ -44,8 +44,6 @@ public class Vault
 
         var secret = kv2Secret.Data.Data[key];
 
-        Console.WriteLine($"MinHemmelighed: {secret}");
-
         return secret.ToString();
     }
 }
