@@ -6,25 +6,26 @@ using VaultSharp.V1.Commons;
 namespace Security;
 public class Vault
 {
-    private readonly string EndPoint;
+    private readonly IConfiguration _config;
+    private readonly string? EndPoint;
     private HttpClientHandler httpClientHandler;
-    //private IVaultClient vaultClient;
-    //private IAuthMethodInfo authMethod;
 
     public Vault()
     {
-        EndPoint = "https://localhost:8201/";
+        EndPoint = _config["Vault_EndPoint"];
         httpClientHandler = new HttpClientHandler();
         httpClientHandler.ServerCertificateCustomValidationCallback =
         (message, cert, chain, sslPolicyErrors) => { return true; };
 
     }
 
+    //Henter secret fra vault
     public async Task<string> GetSecret(string path, string key)
     {
-        // Initialize one of the several auth methods.
-        IAuthMethodInfo authMethod = new TokenAuthMethodInfo("00000000-0000-0000-0000-000000000000");
-        // Initialize settings. You can also set proxies, custom delegates etc.here.
+        //Hvilken auth method der skal bruges samt hvilken token der skal bruges
+        IAuthMethodInfo authMethod = new TokenAuthMethodInfo(_config["Vault_Token"]);
+
+        //En Constructor til VaultClientSettings, som er en klasse der indeholder alle settings til VaultClient
         var vaultClientSettings = new VaultClientSettings(EndPoint, authMethod)
         {
             Namespace = "",
@@ -36,10 +37,7 @@ public class Vault
         };
 
         IVaultClient vaultClient = new VaultClient(vaultClientSettings);
-
-
-
-        // Use client to read a key-value secret.
+        //Bruger klienten til at hente key value secreten
         Secret<SecretData> kv2Secret = await vaultClient.V1.Secrets.KeyValue.V2.ReadSecretAsync(path: path, mountPoint: "secret");
 
         var secret = kv2Secret.Data.Data[key];

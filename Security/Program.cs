@@ -5,13 +5,17 @@ using Security;
 
 var builder = WebApplication.CreateBuilder(args);
 
+//Laver en instans af Vault klassen
 Vault vault = new();
+//Henter secret og issuer fra vault
 string mySecret = vault.GetSecret("authentication", "secret").Result;
 string myIssuer = vault.GetSecret("authentication", "issuer").Result;
 builder.Services
+//Tilføjer autentificering med JWT
 .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 .AddJwtBearer(options =>
 {
+    //Tilføjer token validation parameters
     options.TokenValidationParameters = new TokenValidationParameters()
     {
         ValidateIssuer = true,
