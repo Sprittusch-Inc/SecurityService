@@ -20,8 +20,10 @@ builder.Services
     {
         ValidateIssuer = true,
         ValidateLifetime = true,
+        ValidateAudience = true,
         ValidateIssuerSigningKey = true,
         ValidIssuer = myIssuer,
+        ValidAudience = "https://localhost",
         IssuerSigningKey =
     new SymmetricSecurityKey(Encoding.UTF8.GetBytes(mySecret))
     };
