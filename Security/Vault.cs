@@ -10,8 +10,9 @@ public class Vault
     private readonly string? EndPoint;
     private HttpClientHandler httpClientHandler;
 
-    public Vault()
+    public Vault(IConfiguration config)
     {
+        _config = config;
         EndPoint = _config["Vault_EndPoint"];
         httpClientHandler = new HttpClientHandler();
         httpClientHandler.ServerCertificateCustomValidationCallback =

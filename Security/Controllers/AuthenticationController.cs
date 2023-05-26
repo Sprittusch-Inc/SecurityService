@@ -44,6 +44,7 @@ public class AuthenticationController : ControllerBase
     //Genererer en JWT token udfra email og en user rolle
     private string GenerateJwtToken(string email, string role)
     {
+        vault = new Vault(_config);
         //henter secret og issuer fra vault
         string mySecret = vault.GetSecret("authentication", "secret").Result;
         string myIssuer = vault.GetSecret("authentication", "issuer").Result;

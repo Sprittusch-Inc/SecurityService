@@ -6,7 +6,7 @@ using Security;
 var builder = WebApplication.CreateBuilder(args);
 
 //Laver en instans af Vault klassen
-Vault vault = new();
+Vault vault = new Vault(_config);
 //Henter secret og issuer fra vault
 string mySecret = vault.GetSecret("authentication", "secret").Result;
 string myIssuer = vault.GetSecret("authentication", "issuer").Result;
