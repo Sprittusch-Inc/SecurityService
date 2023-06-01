@@ -12,6 +12,9 @@ NLog.LogManager.Setup()
 logger.Debug("init main");
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Vault deployment-issues
+/*
 IConfigurationBuilder configurationBuilder = new ConfigurationBuilder();
 configurationBuilder.AddJsonFile("appsettings.json");
 configurationBuilder.AddEnvironmentVariables();
@@ -19,9 +22,14 @@ IConfiguration config = configurationBuilder.Build();
 
 //Laver en instans af Vault klassen
 Vault vault = new Vault(config);
+
 //Henter secret og issuer fra vault
 string mySecret = vault.GetSecret("authentication", "secret").Result;
 string myIssuer = vault.GetSecret("authentication", "issuer").Result;
+*/
+
+string myIssuer = Environment.GetEnvironmentVariable("Issuer") ?? "Sprittusch Inc.";
+string mySecret = Environment.GetEnvironmentVariable("Secret") ?? "SpritNet";
 
 //Tilføjer autentificering med JWT
 builder.Services
@@ -33,7 +41,7 @@ builder.Services
     {
         ValidateIssuer = true,
         ValidateLifetime = true,
-        ValidateAudience = true,
+        ValidateAudience = false,
         ValidateIssuerSigningKey = true,
         ValidIssuer = myIssuer,
         ValidAudience = "https://localhost",

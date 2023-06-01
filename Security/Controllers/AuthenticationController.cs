@@ -20,15 +20,31 @@ public class AuthenticationController : ControllerBase
     private readonly IServiceCollection _services;
     protected static IMongoClient _client;
     protected static IMongoDatabase _db;
+    private static string? _connString;
+    private static string? myIssuer;
+    private static string? mySecret;
+
+
+    // Vault deployment-issues
+    /*
     private Vault vault;
+    */
 
     public AuthenticationController(ILogger<AuthenticationController> logger, IConfiguration config)
     {
         _logger = logger;
         _config = config;
+        _connString = config["MongoConnection"];
+        myIssuer = config["Issuer"];
+        mySecret = config["Secret"];
+
+        // Vault deployment-issues
+        /*
         vault = new Vault(_config);
         string cons = vault.GetSecret("dbconnection", "constring").Result;
-        _client = new MongoClient(cons);
+        */
+
+        _client = new MongoClient(_connString);
         _db = _client.GetDatabase("user");
     }
     const int keySize = 64;
@@ -47,13 +63,21 @@ public class AuthenticationController : ControllerBase
     private string GenerateJwtToken(string email, string role)
     {
         _logger.LogInformation($"Attempting to generate JWT-token for {email}");
+
+        // Vault deployment-issues
+        /*
         vault = new Vault(_config);
-        
-        //henter secret og issuer fra vault
+        */
+
+        // henter secret og issuer fra vault
         _logger.LogInformation("Fetching Secret and issuer...");
+
+        // Vault deployment-issues
+        /*
         string mySecret = vault.GetSecret("authentication", "secret").Result;
         string myIssuer = vault.GetSecret("authentication", "issuer").Result;
-        
+        */
+
         //laver security key, credentials og claims
         _logger.LogInformation("Constructing claims and credentials...");
         var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(mySecret));
@@ -72,7 +96,7 @@ public class AuthenticationController : ControllerBase
             claims,
             expires: DateTime.Now.AddMinutes(15),
             signingCredentials: credentials);
-        
+
         _logger.LogInformation($"Successfully generated a token for {email} with the role {role}.");
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
