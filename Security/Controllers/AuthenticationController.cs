@@ -12,7 +12,7 @@ using System.IdentityModel.Tokens.Jwt;
 namespace Security.Controllers;
 
 [ApiController]
-[Route("[controller]")]
+[Route("api/[controller]")]
 public class AuthenticationController : ControllerBase
 {
     private readonly IConfiguration _config;
